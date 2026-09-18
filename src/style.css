@@ -1,6 +1,6 @@
 :root {
   color: rgba(255, 255, 255, 0.92);
-  background: #02030a;
+  background: #010611;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -30,7 +30,7 @@ body {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background: #02030a;
+  background: #010611;
 }
 
 .welcome {
@@ -98,7 +98,7 @@ h1 {
   align-content: center;
   justify-items: center;
   gap: 1.25rem;
-  background: #02030a;
+  background: #010611;
   opacity: 1;
   transition: opacity 300ms ease;
 }

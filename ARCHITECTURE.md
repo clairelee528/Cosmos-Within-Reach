@@ -374,7 +374,7 @@ export const planets = [
 ];
 ```
 
-Add Jupiter, Saturn, and Neptune using the same schema.
+Add Mercury, Venus, Jupiter, Saturn, Uranus, and Neptune using the same schema.
 
 Do not hardcode planet knowledge inside UI components.
 
@@ -1187,6 +1187,10 @@ Scene
 ├── AmbientLight
 ├── DirectionalLight
 ├── SolarSystemGroup
+│   ├── MercuryGroup
+│   │   └── MercuryMesh
+│   ├── VenusGroup
+│   │   └── VenusMesh
 │   ├── EarthGroup
 │   │   └── EarthMesh
 │   ├── MarsGroup
@@ -1196,6 +1200,8 @@ Scene
 │   ├── SaturnGroup
 │   │   ├── SaturnMesh
 │   │   └── RingMesh
+│   ├── UranusGroup
+│   │   └── UranusMesh
 │   └── NeptuneGroup
 │       └── NeptuneMesh
 └── optional effects
@@ -1519,7 +1525,7 @@ Tasks:
 - Add basic animation
 
 Acceptance:
-Five planets render and rotate correctly.
+Eight planets render and rotate correctly.
 
 ---
 
@@ -1681,7 +1687,7 @@ The MVP is complete when all of the following are true:
 
 - Application runs locally using `npm run dev`.
 - Application can build using `npm run build`.
-- Five planets are available.
+- All eight major planets are available.
 - User can hover a planet.
 - User can select a planet.
 - Selected planet enters Explore Mode.

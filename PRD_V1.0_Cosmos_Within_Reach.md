@@ -179,12 +179,15 @@ The goal is to demonstrate the complete interaction experience rather than simul
 
 ## 6.1 Included in MVP
 
-The first version should contain approximately five planets:
+The first version should contain all eight major planets:
 
+- Mercury
+- Venus
 - Earth
 - Mars
 - Jupiter
 - Saturn
+- Uranus
 - Neptune
 
 The core experience must support:
@@ -785,13 +788,16 @@ Recommended schema:
 }
 ```
 
-The MVP should contain data for:
+The MVP should contain data for all eight major planets:
 
 ```text
+Mercury
+Venus
 Earth
 Mars
 Jupiter
 Saturn
+Uranus
 Neptune
 ```
 
@@ -998,7 +1004,7 @@ The MVP is successful when:
 
 - The application runs in a browser.
 - The solar-system scene loads correctly.
-- Approximately five planets are available.
+- All eight major planets are available.
 - Hand tracking works.
 - Gesture cursor works.
 - Planet hover works.

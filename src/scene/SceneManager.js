@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { sceneConfig } from '../config/sceneConfig.js';
+import { planets } from '../data/planets.js';
+import { PlanetManager } from './PlanetManager.js';
+import { Starfield } from './Starfield.js';
 
 /**
  * Owns the Three.js scene, camera, renderer, and animation loop.
@@ -15,7 +18,8 @@ export class SceneManager {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
-    this.testSphere = null;
+    this.planetManager = null;
+    this.starfield = null;
     this.animationFrameId = null;
     this.lastFrameTime = null;
     this.resizeObserver = null;
@@ -29,7 +33,8 @@ export class SceneManager {
     this.createCamera();
     this.createRenderer();
     this.createLights();
-    this.createTestSphere();
+    this.createStarfield();
+    this.createPlanets();
     this.observeResize();
     this.start();
   }
@@ -77,38 +82,17 @@ export class SceneManager {
     this.scene.add(ambientLight, keyLight);
   }
 
-  createTestSphere() {
-    const geometry = new THREE.SphereGeometry(1.7, 64, 64);
-    const material = new THREE.MeshStandardMaterial({
-      color: sceneConfig.testSphere.color,
-      roughness: 0.52,
-      metalness: 0.08,
+  createPlanets() {
+    this.planetManager = new PlanetManager({
+      scene: this.scene,
+      planetData: planets,
     });
+    this.planetManager.createAll();
+  }
 
-    const sphereMesh = new THREE.Mesh(geometry, material);
-
-    const gridGeometry = new THREE.SphereGeometry(1.71, 16, 10);
-    const gridMaterial = new THREE.MeshBasicMaterial({
-      color: sceneConfig.testSphere.gridColor,
-      transparent: true,
-      opacity: 0.24,
-      wireframe: true,
-    });
-    const gridMesh = new THREE.Mesh(gridGeometry, gridMaterial);
-
-    const markerGeometry = new THREE.SphereGeometry(0.13, 24, 24);
-    const markerMaterial = new THREE.MeshStandardMaterial({
-      color: sceneConfig.testSphere.markerColor,
-      emissive: sceneConfig.testSphere.markerColor,
-      emissiveIntensity: 0.45,
-    });
-    const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-    marker.position.set(1.55, 0.55, 0.42);
-
-    this.testSphere = new THREE.Group();
-    this.testSphere.add(sphereMesh, gridMesh, marker);
-    this.testSphere.rotation.x = 0.2;
-    this.scene.add(this.testSphere);
+  createStarfield() {
+    this.starfield = new Starfield(sceneConfig.starfield);
+    this.scene.add(this.starfield.create());
   }
 
   getViewportSize() {
@@ -143,12 +127,8 @@ export class SceneManager {
   }
 
   update(deltaTime) {
-    if (!this.testSphere) {
-      return;
-    }
-
-    this.testSphere.rotation.y += deltaTime * 0.35;
-    this.testSphere.rotation.x += deltaTime * 0.08;
+    this.starfield?.update(deltaTime);
+    this.planetManager?.update(deltaTime);
   }
 
   animate(time) {
@@ -186,15 +166,8 @@ export class SceneManager {
     this.stop();
     this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.handleResize);
-    this.testSphere?.traverse((object) => {
-      object.geometry?.dispose();
-
-      if (Array.isArray(object.material)) {
-        object.material.forEach((material) => material.dispose());
-      } else {
-        object.material?.dispose();
-      }
-    });
+    this.planetManager?.dispose();
+    this.starfield?.dispose();
     this.renderer?.dispose();
     this.renderer?.domElement.remove();
   }

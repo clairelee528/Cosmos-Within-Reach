@@ -39,6 +39,10 @@ export class App {
     this.debugPanel.init();
     this.debugPanel.update('Renderer', 'WebGL');
     this.debugPanel.update(
+      'Planets',
+      this.sceneManager.planetManager.getAll().length,
+    );
+    this.debugPanel.update(
       'Viewport',
       `${window.innerWidth} × ${window.innerHeight}`,
     );
@@ -62,8 +66,8 @@ export class App {
       <section class="welcome" aria-labelledby="project-title">
         <p class="eyebrow">Cosmos Within Reach</p>
         <h1 id="project-title">咫尺星空</h1>
-        <p class="status">Three.js 场景运行中</p>
-        <p class="hint">观察经纬网与黄色标记点，可以确认球体正在旋转。</p>
+        <p class="status">八大行星已接入太阳系总览</p>
+        <p class="hint">行星正在自转与巡游，下一阶段将加入聚焦探索。</p>
       </section>
     `;
   }
