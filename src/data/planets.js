@@ -25,10 +25,17 @@ export const planets = [
     },
     description:
       '水星是距离太阳最近、也是太阳系中最小的行星。它几乎没有能够保存热量的大气层，因此昼夜温差极大。',
+    descriptionEn:
+      'Mercury is the closest planet to the Sun and the smallest in the Solar System. Its almost nonexistent atmosphere cannot retain heat, producing extreme temperature differences between day and night.',
     highlights: [
       '绕太阳运行一周只需要约 88 个地球日。',
       '表面遍布由撞击形成的环形山。',
       '白天和夜晚的温度差可超过 600 摄氏度。',
+    ],
+    highlightsEn: [
+      'It completes one orbit around the Sun in only 88 Earth days.',
+      'Its surface is covered with impact craters.',
+      'Day-to-night temperatures can differ by more than 600 °C.',
     ],
   },
   {
@@ -52,10 +59,17 @@ export const planets = [
     },
     description:
       '金星的大小与地球相近，但浓厚的二氧化碳大气造成了强烈的温室效应，使它成为太阳系中最热的行星。',
+    descriptionEn:
+      'Venus is similar in size to Earth, but its dense carbon-dioxide atmosphere creates an intense greenhouse effect, making it the hottest planet in the Solar System.',
     highlights: [
       '自转方向与太阳系中大多数行星相反。',
       '云层主要由硫酸液滴组成。',
       '金星的一天比它的一年还要长。',
+    ],
+    highlightsEn: [
+      'It rotates in the opposite direction to most planets.',
+      'Its clouds are primarily composed of sulfuric acid droplets.',
+      'A day on Venus lasts longer than its year.',
     ],
   },
   {
@@ -85,10 +99,17 @@ export const planets = [
     },
     description:
       '地球是距离太阳第三近的行星，也是目前已知唯一拥有生命的世界。液态水、稳定的大气层和适宜的温度共同塑造了它独特的生态环境。',
+    descriptionEn:
+      'Earth is the third planet from the Sun and the only world currently known to support life. Liquid water, a stable atmosphere, and moderate temperatures shape its unique biosphere.',
     highlights: [
       '约 71% 的地表被海洋覆盖。',
       '拥有一颗天然卫星——月球。',
       '大气层主要由氮气和氧气组成。',
+    ],
+    highlightsEn: [
+      'Oceans cover roughly 71% of its surface.',
+      'It has one natural satellite—the Moon.',
+      'Its atmosphere consists mainly of nitrogen and oxygen.',
     ],
   },
   {
@@ -112,10 +133,17 @@ export const planets = [
     },
     description:
       '火星是一颗寒冷而干燥的沙漠行星。它的岩石与尘埃富含氧化铁，因此从太空中看呈现出醒目的红色。',
+    descriptionEn:
+      'Mars is a cold, dry desert world. Iron oxide in its rocks and dust gives the planet its distinctive red appearance when viewed from space.',
     highlights: [
       '拥有火卫一和火卫二两颗小卫星。',
       '奥林帕斯山是太阳系中已知最高的火山。',
       '地表保留着远古河流和湖泊留下的痕迹。',
+    ],
+    highlightsEn: [
+      'It has two small moons, Phobos and Deimos.',
+      'Olympus Mons is the tallest known volcano in the Solar System.',
+      'Its surface preserves traces of ancient rivers and lakes.',
     ],
   },
   {
@@ -139,10 +167,17 @@ export const planets = [
     },
     description:
       '木星是太阳系中体积最大的行星。它主要由氢和氦构成，快速自转的大气形成了色彩分明的云带和巨大风暴。',
+    descriptionEn:
+      'Jupiter is the largest planet in the Solar System. Composed mainly of hydrogen and helium, its rapidly rotating atmosphere forms colorful cloud bands and enormous storms.',
     highlights: [
       '大红斑是一场持续了数百年的巨大风暴。',
       '体积足以容纳约 1300 个地球。',
       '拥有微弱的行星环和庞大的卫星系统。',
+    ],
+    highlightsEn: [
+      'The Great Red Spot is a vast storm that has persisted for centuries.',
+      'Its volume could contain roughly 1,300 Earths.',
+      'It has a faint ring system and a vast family of moons.',
     ],
   },
   {
@@ -171,10 +206,17 @@ export const planets = [
     },
     description:
       '土星是太阳系第六颗行星，以宽广而明亮的行星环闻名。它和木星一样，主要由氢和氦组成。',
+    descriptionEn:
+      'Saturn is the sixth planet from the Sun, renowned for its broad, luminous rings. Like Jupiter, it is composed primarily of hydrogen and helium.',
     highlights: [
       '行星环主要由冰粒、岩石和尘埃组成。',
       '平均密度低于水。',
       '土卫六是太阳系中第二大的卫星。',
+    ],
+    highlightsEn: [
+      'Its rings are made mainly of ice particles, rock, and dust.',
+      'Its average density is lower than that of water.',
+      'Titan is the second-largest moon in the Solar System.',
     ],
   },
   {
@@ -198,10 +240,17 @@ export const planets = [
     },
     description:
       '天王星是一颗颜色淡蓝的冰巨行星。它的自转轴几乎平躺在轨道平面上，看起来像侧躺着绕太阳运行。',
+    descriptionEn:
+      'Uranus is a pale-blue ice giant. Its rotational axis lies almost in its orbital plane, making the planet appear to roll around the Sun on its side.',
     highlights: [
       '自转轴倾角约为 98 度。',
       '拥有暗淡的行星环系统。',
       '大气主要由氢、氦和甲烷组成。',
+    ],
+    highlightsEn: [
+      'Its axial tilt is approximately 98 degrees.',
+      'It possesses a faint system of planetary rings.',
+      'Its atmosphere consists mainly of hydrogen, helium, and methane.',
     ],
   },
   {
@@ -225,10 +274,17 @@ export const planets = [
     },
     description:
       '海王星是太阳系中距离太阳最远的主要行星。大气中的甲烷吸收红光，使它呈现出深邃的蓝色。',
+    descriptionEn:
+      'Neptune is the most distant major planet from the Sun. Methane in its atmosphere absorbs red light, giving the planet its deep blue appearance.',
     highlights: [
       '拥有太阳系中速度最快的行星风。',
       '完成一次公转大约需要 165 个地球年。',
       '海卫一沿着与海王星自转相反的方向运行。',
+    ],
+    highlightsEn: [
+      'It has the fastest planetary winds in the Solar System.',
+      'One orbit takes roughly 165 Earth years.',
+      'Triton orbits in the opposite direction to Neptune’s rotation.',
     ],
   },
 ];

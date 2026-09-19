@@ -7,12 +7,15 @@ const starVertexShader = `
   attribute vec3 starColor;
   uniform float time;
   uniform float brightness;
+  uniform float twinkleStrength;
+  uniform float twinkleSpeed;
   varying float pointBrightness;
   varying vec3 pointColor;
 
   void main() {
     vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
-    float twinkle = 0.96 + 0.04 * sin(time * 0.2 + phase);
+    float twinkle = 1.0 - twinkleStrength * 0.5
+      + twinkleStrength * 0.5 * sin(time * twinkleSpeed + phase);
     pointBrightness = intensity * brightness * twinkle;
     pointColor = starColor;
     gl_PointSize = starSize * (190.0 / max(-viewPosition.z, 1.0));
@@ -149,9 +152,14 @@ function getBandAxes(angleDegrees) {
   };
 }
 
-function createStarMaterial(brightness) {
+function createStarMaterial(brightness, config) {
   return new THREE.ShaderMaterial({
-    uniforms: { time: { value: 0 }, brightness: { value: brightness } },
+    uniforms: {
+      time: { value: 0 },
+      brightness: { value: brightness },
+      twinkleStrength: { value: config.twinkleStrength },
+      twinkleSpeed: { value: config.twinkleSpeed },
+    },
     vertexShader: starVertexShader,
     fragmentShader: starFragmentShader,
     transparent: true,
@@ -160,7 +168,14 @@ function createStarMaterial(brightness) {
   });
 }
 
-function createStarGeometry({ count, random, minRadius, maxRadius, band }) {
+function createStarGeometry({
+  count,
+  random,
+  minRadius,
+  maxRadius,
+  sizeScale,
+  band,
+}) {
   const positions = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
   const phases = new Float32Array(count);
@@ -200,9 +215,10 @@ function createStarGeometry({ count, random, minRadius, maxRadius, band }) {
     positions[offset + 1] = direction.y * radius;
     positions[offset + 2] = direction.z * radius;
     const brightStar = random() > (band ? 0.997 : 0.994);
-    sizes[index] = brightStar
+    sizes[index] = (brightStar
       ? THREE.MathUtils.lerp(1.8, 3.0, random())
-      : THREE.MathUtils.lerp(band ? 0.48 : 0.48, band ? 1.32 : 1.35, random());
+      : THREE.MathUtils.lerp(band ? 0.48 : 0.48, band ? 1.32 : 1.35, random()))
+      * sizeScale;
     intensities[index] = brightStar
       ? THREE.MathUtils.lerp(0.72, 1.0, random())
       : THREE.MathUtils.lerp(band ? 0.30 : 0.28, band ? 0.70 : 0.68, random());
@@ -239,8 +255,9 @@ export class Starfield {
         random: createSeededRandom(528),
         minRadius: this.config.minRadius,
         maxRadius: this.config.maxRadius,
+        sizeScale: this.config.starSizeScale,
       }),
-      createStarMaterial(this.config.starBrightness),
+      createStarMaterial(this.config.starBrightness, this.config),
     );
     baseStars.name = 'base-starfield';
 
@@ -251,9 +268,10 @@ export class Starfield {
         random: createSeededRandom(1729),
         minRadius: this.config.minRadius + 2,
         maxRadius: this.config.maxRadius,
+        sizeScale: this.config.milkyWay.starSizeScale,
         band: { ...axes, width: this.config.milkyWay.width },
       }),
-      createStarMaterial(this.config.starBrightness * 0.92),
+      createStarMaterial(this.config.starBrightness * 0.92, this.config),
     );
     milkyWayStars.name = 'milky-way-stars';
 
@@ -297,10 +315,12 @@ export class Starfield {
   update(deltaTime) {
     const animatedDelta = deltaTime * this.config.milkyWay.animationSpeed;
     this.layers.forEach((layer) => {
-      layer.material.uniforms.time.value += animatedDelta;
+      layer.material.uniforms.time.value += deltaTime;
     });
     this.dustMaterial.uniforms.time.value += animatedDelta;
-    this.group.rotation.y += this.config.driftSpeed * deltaTime;
+    this.layers[0].rotation.y += this.config.driftSpeed * deltaTime;
+    this.layers[1].rotation.y += this.config.driftSpeed * deltaTime * 0.72;
+    this.dust.rotation.y += this.config.driftSpeed * deltaTime * 0.35;
   }
 
   dispose() {

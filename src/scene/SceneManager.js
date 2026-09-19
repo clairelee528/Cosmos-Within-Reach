@@ -3,23 +3,32 @@ import { sceneConfig } from '../config/sceneConfig.js';
 import { planets } from '../data/planets.js';
 import { PlanetManager } from './PlanetManager.js';
 import { Starfield } from './Starfield.js';
+import { PointerRaycaster } from '../interaction/PointerRaycaster.js';
+import { ExploreControls } from '../interaction/ExploreControls.js';
+import { PlanetHoverLabel } from '../ui/PlanetHoverLabel.js';
+import { EVENTS } from '../app/EventBus.js';
 
 /**
  * Owns the Three.js scene, camera, renderer, and animation loop.
  * Input: a host HTML element. Output: a rendered and continuously updated scene.
  */
 export class SceneManager {
-  constructor({ container }) {
+  constructor({ container, events }) {
     if (!(container instanceof HTMLElement)) {
       throw new Error('SceneManager requires a valid container element.');
     }
 
     this.container = container;
+    this.events = events;
     this.scene = null;
     this.camera = null;
     this.renderer = null;
     this.planetManager = null;
     this.starfield = null;
+    this.pointerRaycaster = null;
+    this.exploreControls = null;
+    this.hoverLabel = null;
+    this.unsubscribeFromInteraction = [];
     this.animationFrameId = null;
     this.lastFrameTime = null;
     this.resizeObserver = null;
@@ -35,6 +44,9 @@ export class SceneManager {
     this.createLights();
     this.createStarfield();
     this.createPlanets();
+    this.createPointerRaycaster();
+    this.createExploreControls();
+    this.createHoverFeedback();
     this.observeResize();
     this.start();
   }
@@ -95,6 +107,53 @@ export class SceneManager {
     this.scene.add(this.starfield.create());
   }
 
+  createPointerRaycaster() {
+    this.pointerRaycaster = new PointerRaycaster({
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      planetManager: this.planetManager,
+      events: this.events,
+    });
+    this.pointerRaycaster.init();
+  }
+
+  createHoverFeedback() {
+    this.hoverLabel = new PlanetHoverLabel({
+      container: this.container,
+      camera: this.camera,
+      planetManager: this.planetManager,
+    });
+    this.hoverLabel.init();
+
+    this.unsubscribeFromInteraction.push(
+      this.events.on(EVENTS.PLANET_HOVER_START, ({ planetId }) => {
+        this.planetManager.getById(planetId)?.setHovered(true);
+        this.hoverLabel.show(planetId);
+      }),
+      this.events.on(EVENTS.PLANET_HOVER_END, ({ planetId }) => {
+        this.planetManager.getById(planetId)?.setHovered(false);
+        this.hoverLabel.hide(planetId);
+      }),
+    );
+  }
+
+  createExploreControls() {
+    this.exploreControls = new ExploreControls({
+      canvas: this.renderer.domElement,
+      events: this.events,
+    });
+    this.exploreControls.init();
+    this.unsubscribeFromInteraction.push(
+      this.events.on(EVENTS.ROTATE, ({ deltaX, deltaY }) => {
+        const sensitivity = sceneConfig.explore.rotationSensitivity * 0.001;
+        this.planetManager.rotateSelected(deltaX * sensitivity, deltaY * sensitivity);
+      }),
+      this.events.on(EVENTS.ZOOM, ({ delta }) => {
+        this.planetManager.zoomSelected(delta);
+      }),
+    );
+  }
+
   getViewportSize() {
     return {
       width: Math.max(this.container.clientWidth, 1),
@@ -129,6 +188,22 @@ export class SceneManager {
   update(deltaTime) {
     this.starfield?.update(deltaTime);
     this.planetManager?.update(deltaTime);
+    this.hoverLabel?.update();
+  }
+
+  focusPlanet(planetId) {
+    this.pointerRaycaster?.setEnabled(false);
+    return this.planetManager.focusPlanet(planetId).then((planet) => {
+      this.exploreControls?.setEnabled(true);
+      return planet;
+    });
+  }
+
+  resetFocus() {
+    this.exploreControls?.setEnabled(false);
+    return this.planetManager.resetFocus().then(() => {
+      this.pointerRaycaster?.setEnabled(true);
+    });
   }
 
   animate(time) {
@@ -168,6 +243,11 @@ export class SceneManager {
     window.removeEventListener('resize', this.handleResize);
     this.planetManager?.dispose();
     this.starfield?.dispose();
+    this.pointerRaycaster?.dispose();
+    this.exploreControls?.dispose();
+    this.unsubscribeFromInteraction.forEach((unsubscribe) => unsubscribe());
+    this.unsubscribeFromInteraction = [];
+    this.hoverLabel?.destroy();
     this.renderer?.dispose();
     this.renderer?.domElement.remove();
   }
