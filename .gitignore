@@ -18,3 +18,5 @@ npm-debug.log*
 .idea/
 .vscode/
 
+# Large source textures retained locally; optimized web assets are committed.
+public/textures/sun_emissive_4k.png

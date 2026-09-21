@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { sceneConfig } from '../config/sceneConfig.js';
+import { getOrbitPosition } from './orbitMath.js';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -321,11 +322,12 @@ export class Planet {
 
   updateOrbitPosition() {
     const { orbitRadius } = this.data.scene;
-    const x = Math.cos(this.orbitAngle) * orbitRadius;
-    const y = Math.sin(this.orbitAngle) * orbitRadius * 0.46;
-    const z = Math.sin(this.orbitAngle) * 0.7;
-
-    this.group.position.set(x, y, z);
+    getOrbitPosition(
+      this.orbitAngle,
+      orbitRadius,
+      sceneConfig.solarSystem.orbitInclination,
+      this.group.position,
+    );
   }
 
   setHovered(value) {

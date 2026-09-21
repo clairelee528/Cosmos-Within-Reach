@@ -3,6 +3,7 @@ import { sceneConfig } from '../config/sceneConfig.js';
 import { planets } from '../data/planets.js';
 import { PlanetManager } from './PlanetManager.js';
 import { Starfield } from './Starfield.js';
+import { SolarSystemGuide } from './SolarSystemGuide.js';
 import { PointerRaycaster } from '../interaction/PointerRaycaster.js';
 import { ExploreControls } from '../interaction/ExploreControls.js';
 import { PlanetHoverLabel } from '../ui/PlanetHoverLabel.js';
@@ -25,6 +26,7 @@ export class SceneManager {
     this.renderer = null;
     this.planetManager = null;
     this.starfield = null;
+    this.solarSystemGuide = null;
     this.pointerRaycaster = null;
     this.exploreControls = null;
     this.hoverLabel = null;
@@ -43,6 +45,7 @@ export class SceneManager {
     this.createRenderer();
     this.createLights();
     this.createStarfield();
+    this.createSolarSystemGuide();
     this.createPlanets();
     this.createPointerRaycaster();
     this.createExploreControls();
@@ -104,7 +107,17 @@ export class SceneManager {
 
   createStarfield() {
     this.starfield = new Starfield(sceneConfig.starfield);
-    this.scene.add(this.starfield.create());
+    const starfieldGroup = this.starfield.create();
+    starfieldGroup.position.copy(this.camera.position);
+    this.scene.add(starfieldGroup);
+  }
+
+  createSolarSystemGuide() {
+    this.solarSystemGuide = new SolarSystemGuide({
+      config: sceneConfig.solarSystem,
+      planetData: planets,
+    });
+    this.scene.add(this.solarSystemGuide.create());
   }
 
   createPointerRaycaster() {
@@ -187,12 +200,14 @@ export class SceneManager {
 
   update(deltaTime) {
     this.starfield?.update(deltaTime);
+    this.solarSystemGuide?.update(deltaTime);
     this.planetManager?.update(deltaTime);
     this.hoverLabel?.update();
   }
 
   focusPlanet(planetId) {
     this.pointerRaycaster?.setEnabled(false);
+    this.solarSystemGuide?.setExploring(true);
     return this.planetManager.focusPlanet(planetId).then((planet) => {
       this.exploreControls?.setEnabled(true);
       return planet;
@@ -201,6 +216,7 @@ export class SceneManager {
 
   resetFocus() {
     this.exploreControls?.setEnabled(false);
+    this.solarSystemGuide?.setExploring(false);
     return this.planetManager.resetFocus().then(() => {
       this.pointerRaycaster?.setEnabled(true);
     });
@@ -243,6 +259,7 @@ export class SceneManager {
     window.removeEventListener('resize', this.handleResize);
     this.planetManager?.dispose();
     this.starfield?.dispose();
+    this.solarSystemGuide?.dispose();
     this.pointerRaycaster?.dispose();
     this.exploreControls?.dispose();
     this.unsubscribeFromInteraction.forEach((unsubscribe) => unsubscribe());

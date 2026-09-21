@@ -116,7 +116,7 @@ export class App {
       <section class="welcome" aria-labelledby="project-title">
         <p class="eyebrow">Cosmos Within Reach</p>
         <h1 id="project-title">咫尺星空</h1>
-        <p class="status">八大行星已接入太阳系总览</p>
+        <p class="status">沿轨道探索太阳系八大行星</p>
         <p class="hint">悬停识别行星，点击进入近距离探索。</p>
       </section>
     `;

@@ -11,7 +11,7 @@ export const planets = [
     texture: '/textures/mercury_albedo_4k.png',
     scene: {
       radius: 0.38,
-      orbitRadius: 2.4,
+      orbitRadius: 3,
       orbitSpeed: 0.11,
       rotationSpeed: 0.001,
       initialAngle: 5.75,
@@ -45,7 +45,7 @@ export const planets = [
     texture: '/textures/venus_albedo_4k.png',
     scene: {
       radius: 0.64,
-      orbitRadius: 3.2,
+      orbitRadius: 4.4,
       orbitSpeed: 0.09,
       rotationSpeed: -0.0015,
       initialAngle: 4.7,
@@ -79,7 +79,7 @@ export const planets = [
     texture: '/textures/earth_albedo_4k.png',
     scene: {
       radius: 0.68,
-      orbitRadius: 4,
+      orbitRadius: 5.8,
       orbitSpeed: 0.08,
       rotationSpeed: 0.004,
       initialAngle: 0.2,
@@ -119,7 +119,7 @@ export const planets = [
     texture: '/textures/mars_albedo_4k.png',
     scene: {
       radius: 0.52,
-      orbitRadius: 5.5,
+      orbitRadius: 7.5,
       orbitSpeed: 0.065,
       rotationSpeed: 0.003,
       initialAngle: 1.35,
@@ -153,7 +153,7 @@ export const planets = [
     texture: '/textures/jupiter_albedo_4k.png',
     scene: {
       radius: 1.35,
-      orbitRadius: 7.3,
+      orbitRadius: 10,
       orbitSpeed: 0.045,
       rotationSpeed: 0.008,
       initialAngle: 2.55,
@@ -187,7 +187,7 @@ export const planets = [
     texture: '/textures/saturn_albedo_4k.png',
     scene: {
       radius: 1.2,
-      orbitRadius: 9.2,
+      orbitRadius: 13,
       orbitSpeed: 0.035,
       rotationSpeed: 0.007,
       initialAngle: 3.75,
@@ -226,7 +226,7 @@ export const planets = [
     texture: '/textures/uranus_albedo_4k.png',
     scene: {
       radius: 0.92,
-      orbitRadius: 10.3,
+      orbitRadius: 16,
       orbitSpeed: 0.029,
       rotationSpeed: -0.005,
       initialAngle: 0.9,
@@ -260,7 +260,7 @@ export const planets = [
     texture: '/textures/neptune_albedo_4k.png',
     scene: {
       radius: 0.88,
-      orbitRadius: 11.2,
+      orbitRadius: 19,
       orbitSpeed: 0.025,
       rotationSpeed: 0.006,
       initialAngle: 5.15,

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Planet } from './Planet.js';
 import { sceneConfig } from '../config/sceneConfig.js';
+import { getOrbitPosition } from './orbitMath.js';
 
 /**
  * Creates, stores, and updates every runtime Planet instance.
@@ -20,6 +21,7 @@ export class PlanetManager {
     this.planetData = planetData;
     this.solarSystemGroup = new THREE.Group();
     this.solarSystemGroup.name = 'solar-system';
+    this.solarSystemGroup.position.y = sceneConfig.solarSystem.verticalOffset;
     this.planets = new Map();
     this.focusTransition = null;
     this.returnTransition = null;
@@ -134,10 +136,10 @@ export class PlanetManager {
       selectedPlanet,
       startPosition: selectedPlanet.group.position.clone(),
       startScale: selectedPlanet.currentScale,
-      targetPosition: new THREE.Vector3(
-        Math.cos(selectedPlanet.orbitAngle) * selectedPlanet.data.scene.orbitRadius,
-        Math.sin(selectedPlanet.orbitAngle) * selectedPlanet.data.scene.orbitRadius * 0.46,
-        Math.sin(selectedPlanet.orbitAngle) * 0.7,
+      targetPosition: getOrbitPosition(
+        selectedPlanet.orbitAngle,
+        selectedPlanet.data.scene.orbitRadius,
+        sceneConfig.solarSystem.orbitInclination,
       ),
       elapsed: 0,
       promise,

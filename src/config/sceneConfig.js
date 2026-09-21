@@ -1,10 +1,10 @@
 export const sceneConfig = Object.freeze({
   backgroundColor: 0x010611,
   camera: Object.freeze({
-    fov: 55,
+    fov: 21,
     near: 0.1,
     far: 1000,
-    position: Object.freeze({ x: 0, y: 0, z: 25 }),
+    position: Object.freeze({ x: 0, y: 0, z: 70 }),
   }),
   renderer: Object.freeze({
     maxPixelRatio: 2,
@@ -47,6 +47,21 @@ export const sceneConfig = Object.freeze({
       position: Object.freeze({ x: 4, y: 3, z: 6 }),
     }),
   }),
+  solarSystem: Object.freeze({
+    verticalOffset: -0.55,
+    orbitInclination: 60,
+    orbitOpacity: 0.3,
+    sun: Object.freeze({
+      radius: 1.78,
+      texture: '/textures/sun_emissive_4k.webp',
+      brightness: 1,
+      rotationSpeed: 0.0004,
+      glowOpacity: 0.34,
+      glowScale: 3.8,
+      exploreScale: 0.72,
+      exploreBrightness: 0.4,
+    }),
+  }),
   hoverScale: 1.1,
   interaction: Object.freeze({
     hitAreaScale: 1.45,
@@ -56,7 +71,7 @@ export const sceneConfig = Object.freeze({
     minScale: 0.78,
     maxScale: 1.5,
     focusRadius: 2.55,
-    focusPosition: Object.freeze({ x: -6.8, y: -0.35, z: 4 }),
+    focusPosition: Object.freeze({ x: -6.8, y: -0.35, z: 11 }),
     transitionDuration: 1.15,
     backgroundPlanetScale: 0.62,
     backgroundPlanetBrightness: 0.42,
