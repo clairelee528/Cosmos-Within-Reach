@@ -6,6 +6,7 @@
 export const EVENTS = Object.freeze({
   HAND_FOUND: 'HAND_FOUND',
   HAND_LOST: 'HAND_LOST',
+  HAND_TRACK_UPDATE: 'HAND_TRACK_UPDATE',
   CURSOR_MOVE: 'CURSOR_MOVE',
   PLANET_HOVER_START: 'PLANET_HOVER_START',
   PLANET_HOVER_END: 'PLANET_HOVER_END',
@@ -61,4 +62,3 @@ export class EventBus {
     this.#listeners.clear();
   }
 }
-

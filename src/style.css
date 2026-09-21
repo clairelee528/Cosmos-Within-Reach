@@ -318,6 +318,98 @@ h1 {
   text-align: center;
 }
 
+.camera-source {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.camera-status {
+  position: absolute;
+  z-index: 8;
+  bottom: 1rem;
+  left: 1rem;
+  max-width: min(28rem, calc(100vw - 2rem));
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba(144, 171, 223, 0.22);
+  border-radius: 0.5rem;
+  background: rgba(2, 8, 20, 0.78);
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.24);
+  color: rgba(215, 228, 249, 0.82);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  backdrop-filter: blur(0.75rem);
+}
+
+.camera-status[data-state="READY"] {
+  border-color: rgba(133, 215, 184, 0.28);
+  color: rgba(190, 239, 218, 0.9);
+}
+
+.camera-status[data-state="ERROR"] {
+  border-color: rgba(245, 174, 132, 0.3);
+  color: rgba(255, 214, 190, 0.9);
+}
+
+.camera-status[hidden] {
+  display: none;
+}
+
+.hand-debug-view {
+  position: absolute;
+  z-index: 7;
+  bottom: 1rem;
+  left: 1rem;
+  width: min(22rem, calc(100vw - 2rem));
+  overflow: hidden;
+  border: 1px solid rgba(142, 181, 239, 0.3);
+  border-radius: 0.65rem;
+  background: rgba(2, 8, 20, 0.88);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.45);
+  color: rgba(216, 230, 251, 0.76);
+  backdrop-filter: blur(0.8rem);
+}
+
+.hand-debug-view[hidden] {
+  display: none;
+}
+
+.hand-debug-header {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 0.8rem;
+  color: #91afe1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.hand-debug-header strong {
+  color: rgba(242, 247, 255, 0.9);
+  font-weight: 500;
+}
+
+.hand-debug-view canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #020712;
+}
+
+.hand-debug-view p {
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  color: rgba(155, 181, 225, 0.58);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
 .loading-screen {
   position: absolute;
   z-index: 10;

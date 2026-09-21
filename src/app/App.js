@@ -5,6 +5,10 @@ import { DEBUG } from '../config/constants.js';
 import { DebugPanel } from '../ui/DebugPanel.js';
 import { LoadingScreen } from '../ui/LoadingScreen.js';
 import { PlanetInfoPanel } from '../ui/PlanetInfoPanel.js';
+import { CameraManager, CAMERA_STATES } from '../input/CameraManager.js';
+import { CameraStatus } from '../ui/CameraStatus.js';
+import { HandTracker, HAND_TRACKER_STATES } from '../vision/HandTracker.js';
+import { HandDebugView } from '../ui/HandDebugView.js';
 
 /**
  * Coordinates the project's top-level modules.
@@ -23,6 +27,16 @@ export class App {
     this.loadingScreen = new LoadingScreen({ root });
     this.debugPanel = new DebugPanel({ root, enabled: DEBUG });
     this.planetInfoPanel = new PlanetInfoPanel({ root, events: this.events });
+    this.cameraStatus = new CameraStatus({ root });
+    this.cameraManager = new CameraManager({
+      onStateChange: this.handleCameraStateChange,
+    });
+    this.handTracker = new HandTracker({
+      onStateChange: this.handleHandTrackerStateChange,
+      onResult: this.handleHandTrackingResult,
+    });
+    this.handDebugView = new HandDebugView({ root });
+    this.wasHandDetected = false;
     this.unsubscribeFromState = null;
     this.unsubscribeFromInteraction = [];
   }
@@ -36,6 +50,8 @@ export class App {
 
     this.renderWelcomeScreen();
     this.planetInfoPanel.init();
+    this.cameraStatus.init();
+    this.handDebugView.init();
     this.loadingScreen.show('正在初始化星空场景…');
     this.loadingScreen.setMessage('正在创建 3D 场景…');
     this.sceneManager = new SceneManager({
@@ -68,6 +84,9 @@ export class App {
     });
     this.loadingScreen.hide();
 
+    // Camera failure must never block the existing mouse interaction flow.
+    this.initializeHandInput();
+
     window.addEventListener('resize', this.handleWindowResize);
   }
 
@@ -75,6 +94,80 @@ export class App {
     this.debugPanel.update(
       'Viewport',
       `${window.innerWidth} × ${window.innerHeight}`,
+    );
+  };
+
+  handleCameraStateChange = ({ state, width, height, message }) => {
+    this.cameraStatus.update({ state, message });
+
+    const labels = {
+      [CAMERA_STATES.IDLE]: 'Idle',
+      [CAMERA_STATES.REQUESTING]: 'Requesting permission',
+      [CAMERA_STATES.READY]: `${width} × ${height}`,
+      [CAMERA_STATES.ERROR]: 'Unavailable · mouse fallback',
+      [CAMERA_STATES.STOPPED]: 'Stopped',
+    };
+    this.debugPanel.update('Camera', labels[state] ?? state);
+  };
+
+  handleHandTrackerStateChange = ({ state, message }) => {
+    const labels = {
+      [HAND_TRACKER_STATES.IDLE]: 'Idle',
+      [HAND_TRACKER_STATES.LOADING]: 'Loading',
+      [HAND_TRACKER_STATES.READY]: 'Ready · 1 hand',
+      [HAND_TRACKER_STATES.ERROR]: 'Unavailable · mouse fallback',
+      [HAND_TRACKER_STATES.DISPOSED]: 'Disposed',
+    };
+    this.debugPanel.update('Hand model', labels[state] ?? state);
+
+    if (state === HAND_TRACKER_STATES.LOADING) {
+      this.cameraStatus.show('正在加载手部识别模型…');
+    } else if (state === HAND_TRACKER_STATES.READY) {
+      this.cameraStatus.showTemporary('手部识别模型已就绪');
+    } else if (state === HAND_TRACKER_STATES.ERROR) {
+      this.cameraStatus.showTemporary(message, {
+        state: CAMERA_STATES.ERROR,
+        duration: 6000,
+      });
+    }
+  };
+
+  async initializeHandInput() {
+    try {
+      const [video] = await Promise.all([
+        this.cameraManager.start(),
+        this.handTracker.init(),
+      ]);
+      this.handTracker.start(video);
+      this.handDebugView.setVideo(video);
+      this.debugPanel.update('Hand tracking', 'Running');
+      this.debugPanel.update('Hand view', '按 H 显示');
+    } catch (error) {
+      console.warn(
+        'Hand input is unavailable; continuing with mouse input.',
+        error,
+      );
+      this.debugPanel.update('Hand tracking', 'Mouse fallback');
+    }
+  }
+
+  handleHandTrackingResult = (result) => {
+    this.handDebugView.update(result);
+    this.events.emit(EVENTS.HAND_TRACK_UPDATE, result);
+
+    if (result.detected !== this.wasHandDetected) {
+      this.wasHandDetected = result.detected;
+      this.events.emit(
+        result.detected ? EVENTS.HAND_FOUND : EVENTS.HAND_LOST,
+        result,
+      );
+    }
+
+    this.debugPanel.update(
+      'Hand detected',
+      result.detected
+        ? `Yes · ${result.handedness ?? 'Unknown'} · ${result.landmarks.length} points`
+        : 'No',
     );
   };
 
@@ -128,6 +221,10 @@ export class App {
     this.loadingScreen.destroy();
     this.debugPanel.destroy();
     this.planetInfoPanel.destroy();
+    this.cameraManager.stop();
+    this.handTracker.dispose();
+    this.handDebugView.destroy();
+    this.cameraStatus.destroy();
     this.unsubscribeFromState?.();
     this.unsubscribeFromInteraction.forEach((unsubscribe) => unsubscribe());
     this.unsubscribeFromInteraction = [];
