@@ -9,9 +9,10 @@ import { CameraManager, CAMERA_STATES } from '../input/CameraManager.js';
 import { CameraStatus } from '../ui/CameraStatus.js';
 import { HandTracker, HAND_TRACKER_STATES } from '../vision/HandTracker.js';
 import { HandDebugView } from '../ui/HandDebugView.js';
-import { GestureEngine } from '../gestures/GestureEngine.js';
+import { GestureEngine, GESTURES } from '../gestures/GestureEngine.js';
 import { GestureStabilizer } from '../gestures/GestureStabilizer.js';
 import { GestureSmoother } from '../gestures/GestureSmoother.js';
+import { GestureCursor } from '../ui/GestureCursor.js';
 
 /**
  * Coordinates the project's top-level modules.
@@ -42,6 +43,10 @@ export class App {
     this.gestureEngine = new GestureEngine();
     this.gestureStabilizer = new GestureStabilizer();
     this.gestureSmoother = new GestureSmoother();
+    this.gestureCursor = new GestureCursor({ root });
+    this.handInputEnabled = true;
+    this.handInputPromise = null;
+    this.gestureSelectionCount = 0;
     this.wasHandDetected = false;
     this.unsubscribeFromState = null;
     this.unsubscribeFromInteraction = [];
@@ -58,6 +63,7 @@ export class App {
     this.planetInfoPanel.init();
     this.cameraStatus.init();
     this.handDebugView.init();
+    this.gestureCursor.init();
     this.loadingScreen.show('正在初始化星空场景…');
     this.loadingScreen.setMessage('正在创建 3D 场景…');
     this.sceneManager = new SceneManager({
@@ -75,6 +81,7 @@ export class App {
       'Viewport',
       `${window.innerWidth} × ${window.innerHeight}`,
     );
+    this.debugPanel.update('Gesture selections', '0 / 10');
     this.unsubscribeFromInteraction.push(
       this.events.on(EVENTS.PLANET_HOVER_START, ({ planetId }) => {
         this.debugPanel.update('Pointer target', planetId);
@@ -94,6 +101,7 @@ export class App {
     this.initializeHandInput();
 
     window.addEventListener('resize', this.handleWindowResize);
+    window.addEventListener('keydown', this.handleGlobalKeyDown);
   }
 
   handleWindowResize = () => {
@@ -138,29 +146,102 @@ export class App {
     }
   };
 
-  async initializeHandInput() {
+  initializeHandInput() {
+    if (!this.handInputEnabled || this.handInputPromise) {
+      return this.handInputPromise;
+    }
+
+    this.handInputPromise = this.startHandInput().finally(() => {
+      this.handInputPromise = null;
+    });
+    return this.handInputPromise;
+  }
+
+  async startHandInput() {
     try {
       const [video] = await Promise.all([
         this.cameraManager.start(),
         this.handTracker.init(),
       ]);
-      this.handTracker.start(video);
+
+      if (!this.handInputEnabled) {
+        this.cameraManager.stop();
+        return;
+      }
+
       this.handDebugView.setVideo(video);
+      this.handTracker.start(video);
+      this.gestureCursor.setEnabled(true);
       this.debugPanel.update('Hand tracking', 'Running');
       this.debugPanel.update('Hand view', '按 H 显示');
+      this.debugPanel.update('Gesture input', 'Active · G to pause');
     } catch (error) {
       console.warn(
         'Hand input is unavailable; continuing with mouse input.',
         error,
       );
+      this.handInputEnabled = false;
+      this.gestureCursor.setEnabled(false);
       this.debugPanel.update('Hand tracking', 'Mouse fallback');
+      this.debugPanel.update('Gesture input', 'Paused · G to retry');
     }
+  }
+
+  handleGlobalKeyDown = (event) => {
+    if (event.key.toLowerCase() !== 'g' || event.repeat) return;
+
+    if (this.handInputEnabled) {
+      this.pauseHandInput();
+    } else {
+      this.handInputEnabled = true;
+      this.cameraStatus.show('正在启动手势追踪…');
+      this.initializeHandInput();
+    }
+  };
+
+  pauseHandInput() {
+    this.handInputEnabled = false;
+    this.handTracker.stop();
+    this.cameraManager.stop();
+    this.handDebugView.setVideo(null);
+    this.gestureCursor.setEnabled(false);
+    this.sceneManager?.clearGesturePointer();
+    this.gestureStabilizer.reset();
+    this.gestureSmoother.reset();
+    this.wasHandDetected = false;
+    this.debugPanel.update('Hand tracking', 'Paused');
+    this.debugPanel.update('Gesture input', 'Paused · G to resume');
+    this.cameraStatus.showTemporary('手势追踪已暂停，鼠标仍可正常使用');
   }
 
   handleHandTrackingResult = (result) => {
     const rawGestureFrame = this.gestureEngine.update(result);
     const stableGestureFrame = this.gestureStabilizer.update(rawGestureFrame);
     const gestureFrame = this.gestureSmoother.update(stableGestureFrame);
+    const gesturePlanetId = this.sceneManager?.updateGesturePointer(
+      gestureFrame.cursor,
+    );
+    this.gestureCursor.setHovered(Boolean(gesturePlanetId));
+    this.gestureCursor.update(gestureFrame);
+
+    if (
+      gesturePlanetId &&
+      gestureFrame.stableGesture === GESTURES.PINCH &&
+      gestureFrame.activated &&
+      this.state.current === APP_STATES.OVERVIEW
+    ) {
+      this.gestureSelectionCount += 1;
+      this.debugPanel.update(
+        'Gesture selections',
+        `${Math.min(this.gestureSelectionCount, 10)} / 10`,
+      );
+      this.debugPanel.update('Gesture action', `Select · ${gesturePlanetId}`);
+      this.events.emit(EVENTS.SELECT, {
+        source: 'gesture',
+        planetId: gesturePlanetId,
+      });
+    }
+
     this.handDebugView.update(result);
     this.handDebugView.updateGesture(gestureFrame);
     this.events.emit(EVENTS.HAND_TRACK_UPDATE, result);
@@ -247,6 +328,7 @@ export class App {
 
   destroy() {
     window.removeEventListener('resize', this.handleWindowResize);
+    window.removeEventListener('keydown', this.handleGlobalKeyDown);
     this.sceneManager?.dispose();
     this.loadingScreen.destroy();
     this.debugPanel.destroy();
@@ -254,6 +336,7 @@ export class App {
     this.cameraManager.stop();
     this.handTracker.dispose();
     this.handDebugView.destroy();
+    this.gestureCursor.destroy();
     this.cameraStatus.destroy();
     this.unsubscribeFromState?.();
     this.unsubscribeFromInteraction.forEach((unsubscribe) => unsubscribe());

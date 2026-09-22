@@ -205,6 +205,23 @@ export class SceneManager {
     this.hoverLabel?.update();
   }
 
+  updateGesturePointer(cursor) {
+    if (!cursor) {
+      this.pointerRaycaster?.clearSource('gesture');
+      return null;
+    }
+
+    return this.pointerRaycaster?.updateFromViewportPosition({
+      x: cursor.x,
+      y: cursor.y,
+      source: 'gesture',
+    }) ?? null;
+  }
+
+  clearGesturePointer() {
+    this.pointerRaycaster?.clearSource('gesture');
+  }
+
   focusPlanet(planetId) {
     this.pointerRaycaster?.setEnabled(false);
     this.solarSystemGuide?.setExploring(true);

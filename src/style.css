@@ -357,6 +357,59 @@ h1 {
   display: none;
 }
 
+.gesture-cursor {
+  position: absolute;
+  z-index: 6;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 2px solid rgba(164, 208, 255, 0.92);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0.75rem rgba(89, 161, 255, 0.72),
+    inset 0 0 0.65rem rgba(110, 183, 255, 0.25);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition:
+    width 120ms ease,
+    height 120ms ease,
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+  will-change: left, top;
+}
+
+.gesture-cursor span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: #edf7ff;
+  box-shadow: 0 0 0.5rem rgba(190, 226, 255, 0.95);
+  transform: translate(-50%, -50%);
+}
+
+.gesture-cursor[data-state="hover"] {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-color: #c9e4ff;
+  background: rgba(92, 166, 255, 0.14);
+  box-shadow: 0 0 1.2rem rgba(101, 177, 255, 0.95);
+}
+
+.gesture-cursor[data-state="pinch"] {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-color: #ffe6a3;
+  background: rgba(255, 207, 103, 0.24);
+  box-shadow: 0 0 1rem rgba(255, 202, 91, 0.82);
+}
+
+.gesture-cursor[hidden] {
+  display: none;
+}
+
 .hand-debug-view {
   position: absolute;
   z-index: 7;

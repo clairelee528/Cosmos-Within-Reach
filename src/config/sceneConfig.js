@@ -64,8 +64,8 @@ export const sceneConfig = Object.freeze({
   }),
   hoverScale: 1.1,
   interaction: Object.freeze({
-    hitAreaScale: 1.45,
-    minimumHitRadius: 0.52,
+    hitAreaScale: 1.6,
+    minimumHitRadius: 0.6,
   }),
   explore: Object.freeze({
     minScale: 0.78,

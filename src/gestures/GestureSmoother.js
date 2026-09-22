@@ -1,6 +1,10 @@
 import { gestureConfig } from '../config/gestureConfig.js';
 
 const lerp = (from, to, amount) => from + (to - from) * amount;
+const applyCursorGain = (value, gain) =>
+  gain === 1
+    ? value
+    : Math.min(1, Math.max(0, 0.5 + (value - 0.5) * gain));
 
 /** Smooths cursor, movement, and pinch values without changing gesture labels. */
 export class GestureSmoother {
@@ -25,14 +29,26 @@ export class GestureSmoother {
     }
 
     const rawCursor = { ...gestureFrame.cursor };
+    const amplifiedCursor = {
+      x: applyCursorGain(gestureFrame.cursor.x, this.config.cursorGainX),
+      y: applyCursorGain(gestureFrame.cursor.y, this.config.cursorGainY),
+    };
     const previousCursor = this.smoothedCursor;
 
     if (!previousCursor) {
-      this.smoothedCursor = rawCursor;
+      this.smoothedCursor = amplifiedCursor;
     } else {
       this.smoothedCursor = {
-        x: lerp(previousCursor.x, rawCursor.x, this.config.cursorSmoothing),
-        y: lerp(previousCursor.y, rawCursor.y, this.config.cursorSmoothing),
+        x: lerp(
+          previousCursor.x,
+          amplifiedCursor.x,
+          this.config.cursorSmoothing,
+        ),
+        y: lerp(
+          previousCursor.y,
+          amplifiedCursor.y,
+          this.config.cursorSmoothing,
+        ),
       };
     }
 
