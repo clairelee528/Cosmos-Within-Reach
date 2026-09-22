@@ -400,6 +400,44 @@ h1 {
   background: #020712;
 }
 
+.hand-debug-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  border-top: 1px solid rgba(142, 181, 239, 0.16);
+  border-bottom: 1px solid rgba(142, 181, 239, 0.12);
+}
+
+.hand-debug-metrics div:nth-child(n + 4) {
+  border-top: 1px solid rgba(142, 181, 239, 0.12);
+}
+
+.hand-debug-metrics div {
+  padding: 0.55rem 0.75rem;
+}
+
+.hand-debug-metrics div + div {
+  border-left: 1px solid rgba(142, 181, 239, 0.12);
+}
+
+.hand-debug-metrics div:nth-child(3n + 1) {
+  border-left: 0;
+}
+
+.hand-debug-metrics dt {
+  color: rgba(151, 177, 218, 0.56);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hand-debug-metrics dd {
+  margin: 0.2rem 0 0;
+  color: rgba(239, 245, 255, 0.9);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+}
+
 .hand-debug-view p {
   margin: 0;
   padding: 0.5rem 0.8rem;

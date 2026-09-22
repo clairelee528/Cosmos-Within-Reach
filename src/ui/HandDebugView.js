@@ -34,12 +34,24 @@ export class HandDebugView {
         <span data-hand-fps>0 FPS</span>
       </header>
       <canvas width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}"></canvas>
+      <dl class="hand-debug-metrics">
+        <div><dt>Raw gesture</dt><dd data-raw-gesture>NONE</dd></div>
+        <div><dt>Stable gesture</dt><dd data-stable-gesture>NONE</dd></div>
+        <div><dt>Pinch distance</dt><dd data-pinch-distance>—</dd></div>
+        <div><dt>Cursor</dt><dd data-cursor-position>—</dd></div>
+        <div><dt>Movement</dt><dd data-movement>—</dd></div>
+      </dl>
       <p>H · Hide debug view</p>
     `;
     this.canvas = this.element.querySelector('canvas');
     this.context = this.canvas.getContext('2d');
     this.statusElement = this.element.querySelector('[data-hand-status]');
     this.fpsElement = this.element.querySelector('[data-hand-fps]');
+    this.gestureElement = this.element.querySelector('[data-raw-gesture]');
+    this.stableGestureElement = this.element.querySelector('[data-stable-gesture]');
+    this.pinchElement = this.element.querySelector('[data-pinch-distance]');
+    this.cursorElement = this.element.querySelector('[data-cursor-position]');
+    this.movementElement = this.element.querySelector('[data-movement]');
     this.root.append(this.element);
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -65,6 +77,20 @@ export class HandDebugView {
 
     this.drawVideo();
     if (result.detected) this.drawSkeleton(result.landmarks);
+  }
+
+  updateGesture(gestureFrame) {
+    this.gestureElement.textContent = gestureFrame.rawGesture;
+    this.stableGestureElement.textContent = gestureFrame.stableGesture;
+    this.pinchElement.textContent = Number.isFinite(gestureFrame.pinchDistance)
+      ? gestureFrame.pinchDistance.toFixed(3)
+      : '—';
+    this.cursorElement.textContent = gestureFrame.cursor
+      ? `${gestureFrame.cursor.x.toFixed(3)}, ${gestureFrame.cursor.y.toFixed(3)}`
+      : '—';
+    this.movementElement.textContent = gestureFrame.movement?.moving
+      ? `${gestureFrame.movement.dx.toFixed(3)}, ${gestureFrame.movement.dy.toFixed(3)}`
+      : 'STILL';
   }
 
   updateFps(timestamp) {
@@ -129,7 +155,11 @@ export class HandDebugView {
     this.element = null;
     this.canvas = null;
     this.context = null;
+    this.gestureElement = null;
+    this.stableGestureElement = null;
+    this.pinchElement = null;
+    this.cursorElement = null;
+    this.movementElement = null;
     this.video = null;
   }
 }
-

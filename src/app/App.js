@@ -9,6 +9,9 @@ import { CameraManager, CAMERA_STATES } from '../input/CameraManager.js';
 import { CameraStatus } from '../ui/CameraStatus.js';
 import { HandTracker, HAND_TRACKER_STATES } from '../vision/HandTracker.js';
 import { HandDebugView } from '../ui/HandDebugView.js';
+import { GestureEngine } from '../gestures/GestureEngine.js';
+import { GestureStabilizer } from '../gestures/GestureStabilizer.js';
+import { GestureSmoother } from '../gestures/GestureSmoother.js';
 
 /**
  * Coordinates the project's top-level modules.
@@ -36,6 +39,9 @@ export class App {
       onResult: this.handleHandTrackingResult,
     });
     this.handDebugView = new HandDebugView({ root });
+    this.gestureEngine = new GestureEngine();
+    this.gestureStabilizer = new GestureStabilizer();
+    this.gestureSmoother = new GestureSmoother();
     this.wasHandDetected = false;
     this.unsubscribeFromState = null;
     this.unsubscribeFromInteraction = [];
@@ -152,8 +158,32 @@ export class App {
   }
 
   handleHandTrackingResult = (result) => {
+    const rawGestureFrame = this.gestureEngine.update(result);
+    const stableGestureFrame = this.gestureStabilizer.update(rawGestureFrame);
+    const gestureFrame = this.gestureSmoother.update(stableGestureFrame);
     this.handDebugView.update(result);
+    this.handDebugView.updateGesture(gestureFrame);
     this.events.emit(EVENTS.HAND_TRACK_UPDATE, result);
+    this.debugPanel.update('Raw gesture', gestureFrame.rawGesture);
+    this.debugPanel.update('Stable gesture', gestureFrame.stableGesture);
+    this.debugPanel.update(
+      'Pinch distance',
+      Number.isFinite(gestureFrame.pinchDistance)
+        ? gestureFrame.pinchDistance.toFixed(3)
+        : '—',
+    );
+    this.debugPanel.update(
+      'Cursor',
+      gestureFrame.cursor
+        ? `${gestureFrame.cursor.x.toFixed(3)}, ${gestureFrame.cursor.y.toFixed(3)}`
+        : '—',
+    );
+    this.debugPanel.update(
+      'Movement',
+      gestureFrame.movement?.moving
+        ? `${gestureFrame.movement.dx.toFixed(3)}, ${gestureFrame.movement.dy.toFixed(3)}`
+        : 'Still',
+    );
 
     if (result.detected !== this.wasHandDetected) {
       this.wasHandDetected = result.detected;
