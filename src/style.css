@@ -406,6 +406,14 @@ h1 {
   box-shadow: 0 0 1rem rgba(255, 202, 91, 0.82);
 }
 
+.gesture-cursor[data-state="back"] {
+  width: 2.65rem;
+  height: 2.65rem;
+  border-color: rgba(196, 177, 255, 0.96);
+  background: rgba(139, 111, 255, 0.16);
+  box-shadow: 0 0 1.25rem rgba(144, 116, 255, 0.82);
+}
+
 .gesture-cursor[hidden] {
   display: none;
 }

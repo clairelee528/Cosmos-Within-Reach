@@ -13,6 +13,7 @@ export class GestureSmoother {
     this.smoothedCursor = null;
     this.smoothedMovement = { dx: 0, dy: 0 };
     this.smoothedPinchDistance = null;
+    this.smoothedShakaSpan = null;
   }
 
   update(gestureFrame) {
@@ -24,6 +25,8 @@ export class GestureSmoother {
         cursor: null,
         rawPinchDistance: gestureFrame.pinchDistance,
         pinchDistance: null,
+        rawShakaSpan: gestureFrame.shakaSpan,
+        shakaSpan: null,
         movement: { dx: 0, dy: 0, magnitude: 0, moving: false },
       };
     }
@@ -94,12 +97,27 @@ export class GestureSmoother {
       this.smoothedPinchDistance = null;
     }
 
+    const rawShakaSpan = gestureFrame.shakaSpan;
+    if (Number.isFinite(rawShakaSpan)) {
+      this.smoothedShakaSpan = Number.isFinite(this.smoothedShakaSpan)
+        ? lerp(
+            this.smoothedShakaSpan,
+            rawShakaSpan,
+            this.config.shakaSpanSmoothing,
+          )
+        : rawShakaSpan;
+    } else {
+      this.smoothedShakaSpan = null;
+    }
+
     return {
       ...gestureFrame,
       rawCursor,
       cursor: { ...this.smoothedCursor },
       rawPinchDistance,
       pinchDistance: this.smoothedPinchDistance,
+      rawShakaSpan,
+      shakaSpan: this.smoothedShakaSpan,
       movement,
     };
   }
@@ -108,5 +126,6 @@ export class GestureSmoother {
     this.smoothedCursor = null;
     this.smoothedMovement = { dx: 0, dy: 0 };
     this.smoothedPinchDistance = null;
+    this.smoothedShakaSpan = null;
   }
 }

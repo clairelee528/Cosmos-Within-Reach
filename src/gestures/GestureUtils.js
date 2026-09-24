@@ -102,4 +102,3 @@ export const calculateMotion = (previous, current, palmScale = 1) => {
     moving: distance >= gestureConfig.motionDeadZone,
   };
 };
-

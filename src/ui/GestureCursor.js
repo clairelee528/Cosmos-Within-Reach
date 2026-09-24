@@ -33,6 +33,8 @@ export class GestureCursor {
     this.element.dataset.state =
       gestureFrame.stableGesture === GESTURES.PINCH
         ? 'pinch'
+        : gestureFrame.stableGesture === GESTURES.OPEN_PALM
+          ? 'back'
         : this.hovered
           ? 'hover'
           : 'default';
@@ -57,4 +59,3 @@ export class GestureCursor {
     this.element = null;
   }
 }
-

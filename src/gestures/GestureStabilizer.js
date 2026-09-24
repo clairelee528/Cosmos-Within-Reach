@@ -6,6 +6,7 @@ const CONFIRM_FRAME_KEYS = Object.freeze({
   [GESTURES.POINT]: 'pointConfirmFrames',
   [GESTURES.PINCH]: 'pinchConfirmFrames',
   [GESTURES.OPEN_PALM]: 'openPalmConfirmFrames',
+  [GESTURES.SHAKA]: 'shakaConfirmFrames',
 });
 
 const COOLDOWN_KEYS = Object.freeze({
@@ -111,4 +112,3 @@ export class GestureStabilizer {
     this.lastActivation.clear();
   }
 }
-

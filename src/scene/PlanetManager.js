@@ -116,12 +116,55 @@ export class PlanetManager {
   zoomSelected(delta) {
     if (!this.selectedPlanet || this.focusTransition || this.returnTransition) return;
     const currentMultiplier = this.selectedPlanet.currentScale / this.focusBaseScale;
-    const nextMultiplier = THREE.MathUtils.clamp(
+    this.setSelectedZoomMultiplier(
       currentMultiplier - delta * sceneConfig.explore.zoomSensitivity,
+    );
+  }
+
+  getSelectedZoomMultiplier() {
+    if (!this.selectedPlanet || !this.focusBaseScale) return null;
+    return this.selectedPlanet.currentScale / this.focusBaseScale;
+  }
+
+  setSelectedZoomMultiplier(multiplier) {
+    if (
+      !this.selectedPlanet ||
+      this.focusTransition ||
+      this.returnTransition ||
+      !Number.isFinite(multiplier)
+    ) {
+      return null;
+    }
+
+    const nextMultiplier = THREE.MathUtils.clamp(
+      multiplier,
       sceneConfig.explore.minScale,
       sceneConfig.explore.maxScale,
     );
     this.selectedPlanet.setScale(this.focusBaseScale * nextMultiplier);
+    return nextMultiplier;
+  }
+
+  setSelectedZoomPreset(preset) {
+    const multiplier =
+      preset === 'max'
+        ? sceneConfig.explore.maxScale
+        : preset === 'min'
+          ? sceneConfig.explore.minScale
+          : null;
+    return this.setSelectedZoomMultiplier(multiplier);
+  }
+
+  setSelectedZoomOpenness(openness) {
+    if (!Number.isFinite(openness)) return null;
+    const normalizedOpenness = THREE.MathUtils.clamp(openness, 0, 1);
+    return this.setSelectedZoomMultiplier(
+      THREE.MathUtils.lerp(
+        sceneConfig.explore.minScale,
+        sceneConfig.explore.maxScale,
+        normalizedOpenness,
+      ),
+    );
   }
 
   resetFocus() {

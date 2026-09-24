@@ -2,12 +2,18 @@ import { HAND_LANDMARKS } from '../vision/handLandmarks.js';
 import { detectOpenPalm } from './gestures/detectOpenPalm.js';
 import { detectPinch, getPinchDistance } from './gestures/detectPinch.js';
 import { detectPoint } from './gestures/detectPoint.js';
+import {
+  detectShaka,
+  getShakaSpan,
+  hasShakaPose,
+} from './gestures/detectShaka.js';
 
 export const GESTURES = Object.freeze({
   NONE: 'NONE',
   POINT: 'POINT',
   PINCH: 'PINCH',
   OPEN_PALM: 'OPEN_PALM',
+  SHAKA: 'SHAKA',
 });
 
 /** Converts one normalized MediaPipe hand frame into a raw gesture frame. */
@@ -19,11 +25,14 @@ export class GestureEngine {
 
     const { landmarks } = handFrame;
     const pinchDistance = getPinchDistance(landmarks);
+    const shakaPose = hasShakaPose(landmarks);
+    const shakaSpan = getShakaSpan(landmarks);
     let gesture = GESTURES.NONE;
 
-    // Pinch wins when gestures overlap, so a deliberate select stays observable.
     if (detectPinch(landmarks)) {
       gesture = GESTURES.PINCH;
+    } else if (detectShaka(landmarks)) {
+      gesture = GESTURES.SHAKA;
     } else if (detectOpenPalm(landmarks)) {
       gesture = GESTURES.OPEN_PALM;
     } else if (detectPoint(landmarks)) {
@@ -37,6 +46,8 @@ export class GestureEngine {
       handedness: handFrame.handedness,
       cursor: { x: indexTip.x, y: indexTip.y },
       pinchDistance,
+      shakaPose,
+      shakaSpan,
       timestamp: handFrame.timestamp,
     };
   }
@@ -47,8 +58,9 @@ export class GestureEngine {
       handedness: null,
       cursor: null,
       pinchDistance: null,
+      shakaPose: false,
+      shakaSpan: null,
       timestamp,
     };
   }
 }
-

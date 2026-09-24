@@ -13,6 +13,7 @@ import { GestureEngine, GESTURES } from '../gestures/GestureEngine.js';
 import { GestureStabilizer } from '../gestures/GestureStabilizer.js';
 import { GestureSmoother } from '../gestures/GestureSmoother.js';
 import { GestureCursor } from '../ui/GestureCursor.js';
+import { gestureConfig } from '../config/gestureConfig.js';
 
 /**
  * Coordinates the project's top-level modules.
@@ -47,6 +48,9 @@ export class App {
     this.handInputEnabled = true;
     this.handInputPromise = null;
     this.gestureSelectionCount = 0;
+    this.shakaZoomActive = false;
+    this.openPalmBackStartedAt = null;
+    this.exploreEnteredAt = 0;
     this.wasHandDetected = false;
     this.unsubscribeFromState = null;
     this.unsubscribeFromInteraction = [];
@@ -57,6 +61,22 @@ export class App {
       this.events.emit(EVENTS.STATE_CHANGE, change);
       this.root.dataset.appState = change.currentState;
       this.debugPanel.update('App state', change.currentState);
+
+      if (change.currentState === APP_STATES.EXPLORE) {
+        // Start the first Explore frame from a fresh hand-position baseline;
+        // movement made during the camera transition must not rotate the planet.
+        this.gestureSmoother.reset();
+        this.shakaZoomActive = false;
+        this.openPalmBackStartedAt = null;
+        this.exploreEnteredAt = performance.now();
+        this.debugPanel.update(
+          'Gesture control',
+          'Point: rotate · Thumb/Pinky: zoom',
+        );
+      }
+      if (change.currentState !== APP_STATES.EXPLORE) {
+        this.openPalmBackStartedAt = null;
+      }
     });
 
     this.renderWelcomeScreen();
@@ -208,6 +228,8 @@ export class App {
     this.sceneManager?.clearGesturePointer();
     this.gestureStabilizer.reset();
     this.gestureSmoother.reset();
+    this.shakaZoomActive = false;
+    this.openPalmBackStartedAt = null;
     this.wasHandDetected = false;
     this.debugPanel.update('Hand tracking', 'Paused');
     this.debugPanel.update('Gesture input', 'Paused · G to resume');
@@ -242,6 +264,30 @@ export class App {
       });
     }
 
+    this.updateOpenPalmBack(gestureFrame);
+
+    if (
+      this.state.current === APP_STATES.EXPLORE &&
+      gestureFrame.stableGesture === GESTURES.POINT &&
+      gestureFrame.movement?.moving
+    ) {
+      const deltaX =
+        gestureFrame.movement.dx * gestureConfig.rotationSensitivityX;
+      const deltaY =
+        gestureFrame.movement.dy * gestureConfig.rotationSensitivityY;
+      this.events.emit(EVENTS.ROTATE, {
+        source: 'gesture',
+        deltaX,
+        deltaY,
+      });
+      this.debugPanel.update(
+        'Gesture action',
+        `Rotate · ${deltaX.toFixed(2)}, ${deltaY.toFixed(2)}`,
+      );
+    }
+
+    this.updateShakaZoom(gestureFrame);
+
     this.handDebugView.update(result);
     this.handDebugView.updateGesture(gestureFrame);
     this.events.emit(EVENTS.HAND_TRACK_UPDATE, result);
@@ -251,6 +297,12 @@ export class App {
       'Pinch distance',
       Number.isFinite(gestureFrame.pinchDistance)
         ? gestureFrame.pinchDistance.toFixed(3)
+        : '—',
+    );
+    this.debugPanel.update(
+      'Thumb–pinky span',
+      Number.isFinite(gestureFrame.shakaSpan)
+        ? gestureFrame.shakaSpan.toFixed(3)
         : '—',
     );
     this.debugPanel.update(
@@ -281,6 +333,72 @@ export class App {
         : 'No',
     );
   };
+
+  updateOpenPalmBack(gestureFrame) {
+    if (
+      this.state.current !== APP_STATES.EXPLORE ||
+      gestureFrame.stableGesture !== GESTURES.OPEN_PALM ||
+      performance.now() - this.exploreEnteredAt <
+        gestureConfig.exploreBackGuardMs
+    ) {
+      this.openPalmBackStartedAt = null;
+      return;
+    }
+
+    const now = performance.now();
+    if (!this.openPalmBackStartedAt) {
+      this.openPalmBackStartedAt = now;
+      this.debugPanel.update('Gesture control', 'Hold open palm to return');
+      return;
+    }
+
+    if (
+      now - this.openPalmBackStartedAt >= gestureConfig.openPalmBackHoldMs
+    ) {
+      this.openPalmBackStartedAt = null;
+      this.debugPanel.update('Gesture action', 'Back · open palm');
+      this.events.emit(EVENTS.BACK, { source: 'gesture' });
+    }
+  }
+
+  updateShakaZoom(gestureFrame) {
+    if (
+      this.state.current !== APP_STATES.EXPLORE ||
+      !gestureFrame.shakaPose ||
+      !Number.isFinite(gestureFrame.shakaSpan)
+    ) {
+      this.shakaZoomActive = false;
+      return;
+    }
+
+    if (
+      [gestureFrame.rawGesture, gestureFrame.stableGesture].includes(
+        GESTURES.SHAKA,
+      )
+    ) {
+      this.shakaZoomActive = true;
+    }
+
+    if (!this.shakaZoomActive) return;
+
+    const normalizedSpan = Math.min(
+      1,
+      Math.max(
+        0,
+        (gestureFrame.shakaSpan - gestureConfig.shakaMinSpan) /
+          (gestureConfig.shakaMaxSpan - gestureConfig.shakaMinSpan),
+      ),
+    );
+    const appliedMultiplier = this.sceneManager?.setSelectedZoomOpenness(
+      normalizedSpan,
+    );
+    if (Number.isFinite(appliedMultiplier)) {
+      this.debugPanel.update(
+        'Gesture action',
+        `Zoom · ${appliedMultiplier.toFixed(2)}×`,
+      );
+    }
+  }
 
   handleBack = async () => {
     if (this.state.current !== APP_STATES.EXPLORE) return;

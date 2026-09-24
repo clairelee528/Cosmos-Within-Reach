@@ -65,3 +65,15 @@ test('applies cooldown when PINCH is activated repeatedly', () => {
   });
   assert.equal(result.activated, true);
 });
+
+test('confirms SHAKA only after its deliberate hold duration', () => {
+  const stabilizer = new GestureStabilizer();
+  let result;
+  [10, 20, 30].forEach((time) => {
+    result = stabilizer.update(frame(GESTURES.SHAKA, time));
+  });
+  assert.equal(result.stableGesture, GESTURES.NONE);
+  result = stabilizer.update(frame(GESTURES.SHAKA, 40));
+  assert.equal(result.stableGesture, GESTURES.SHAKA);
+  assert.equal(result.activated, true);
+});

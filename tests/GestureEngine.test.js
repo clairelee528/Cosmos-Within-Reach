@@ -47,7 +47,8 @@ test('returns NONE when no complete hand is present', () => {
 
 test('detects an open palm when four fingers are extended', () => {
   const engine = new GestureEngine();
-  assert.equal(engine.update(frame(makeOpenHand())).gesture, GESTURES.OPEN_PALM);
+  const result = engine.update(frame(makeOpenHand()));
+  assert.equal(result.gesture, GESTURES.OPEN_PALM);
 });
 
 test('detects point when only the index finger is extended', () => {
@@ -55,6 +56,16 @@ test('detects point when only the index finger is extended', () => {
   const points = makeOpenHand();
   FINGERS.slice(1).forEach((finger) => foldFinger(points, finger));
   assert.equal(engine.update(frame(points)).gesture, GESTURES.POINT);
+});
+
+test('detects thumb-and-pinky spread when the middle fingers are folded', () => {
+  const engine = new GestureEngine();
+  const points = makeOpenHand();
+  FINGERS.slice(0, 3).forEach((finger) => foldFinger(points, finger));
+  const result = engine.update(frame(points));
+  assert.equal(result.gesture, GESTURES.SHAKA);
+  assert.equal(result.shakaPose, true);
+  assert.ok(result.shakaSpan > 1.35);
 });
 
 test('gives pinch priority over other overlapping poses', () => {
@@ -65,4 +76,3 @@ test('gives pinch priority over other overlapping poses', () => {
   assert.equal(result.gesture, GESTURES.PINCH);
   assert.ok(result.pinchDistance < 0.1);
 });
-

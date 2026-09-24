@@ -8,9 +8,10 @@ const createSmoother = () =>
     config: { ...gestureConfig, cursorGainX: 1, cursorGainY: 1 },
   });
 
-const frame = (x, y, pinchDistance = 1) => ({
+const frame = (x, y, pinchDistance = 1, shakaSpan = 1.5) => ({
   cursor: { x, y },
   pinchDistance,
+  shakaSpan,
   rawGesture: 'POINT',
   stableGesture: 'POINT',
 });
@@ -63,4 +64,12 @@ test('amplifies cursor movement around the centre of the frame', () => {
   const result = smoother.update(frame(0.6, 0.4));
   assert.ok(Math.abs(result.cursor.x - 0.75) < 1e-9);
   assert.ok(Math.abs(result.cursor.y - 0.16) < 1e-9);
+});
+
+test('smooths thumb-and-pinky span for gradual zoom', () => {
+  const smoother = createSmoother();
+  smoother.update(frame(0.5, 0.5, 1, 1));
+  const result = smoother.update(frame(0.5, 0.5, 1, 2));
+  assert.ok(result.shakaSpan > 1 && result.shakaSpan < 1.5);
+  assert.equal(result.rawShakaSpan, 2);
 });

@@ -222,6 +222,22 @@ export class SceneManager {
     this.pointerRaycaster?.clearSource('gesture');
   }
 
+  getSelectedZoomMultiplier() {
+    return this.planetManager?.getSelectedZoomMultiplier() ?? null;
+  }
+
+  setSelectedZoomMultiplier(multiplier) {
+    return this.planetManager?.setSelectedZoomMultiplier(multiplier) ?? null;
+  }
+
+  setSelectedZoomPreset(preset) {
+    return this.planetManager?.setSelectedZoomPreset(preset) ?? null;
+  }
+
+  setSelectedZoomOpenness(openness) {
+    return this.planetManager?.setSelectedZoomOpenness(openness) ?? null;
+  }
+
   focusPlanet(planetId) {
     this.pointerRaycaster?.setEnabled(false);
     this.solarSystemGuide?.setExploring(true);
